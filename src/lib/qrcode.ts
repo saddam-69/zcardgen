@@ -2,7 +2,7 @@ import { QRCodeSVG } from 'qrcode.react'
 
 export const QRCode = QRCodeSVG
 
-export const generateQRValue = (data: Record<string, any>) => {
+export const generateQRValue = (data: Record<string, unknown>) => {
   return JSON.stringify(data)
 }
 

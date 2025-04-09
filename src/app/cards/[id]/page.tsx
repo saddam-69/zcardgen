@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import Image from 'next/image'
 import { 
   faLinkedin, 
   faTwitter, 
@@ -113,11 +114,15 @@ export default function CardPage({ params }: { params: { id: string } }) {
           {/* En-tête avec logo */}
           <div className="p-6 border-b">
             {card.logo ? (
-              <img 
-                src={card.logo} 
-                alt={`Logo ${card.company}`} 
-                className="h-16 w-auto mb-4"
-              />
+              <div className="relative h-16 w-auto mb-4">
+                <Image 
+                  src={card.logo} 
+                  alt={`Logo ${card.company}`} 
+                  fill
+                  style={{ objectFit: 'contain' }}
+                  priority
+                />
+              </div>
             ) : (
               <div className="h-16 w-16 bg-gray-200 rounded-full mb-4 flex items-center justify-center">
                 <span className="text-2xl font-bold text-gray-500">

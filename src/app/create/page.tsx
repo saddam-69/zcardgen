@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { uploadFile } from '@/lib/utils'
 import { createCardSchema, type CreateCardInput } from '@/lib/zodSchemas'
+import { Resolver } from 'react-hook-form'
 
 export default function CreateCardPage() {
   const router = useRouter()
@@ -18,7 +19,7 @@ export default function CreateCardPage() {
     handleSubmit,
     formState: { errors },
   } = useForm<CreateCardInput>({
-    resolver: zodResolver(createCardSchema) as any,
+    resolver: zodResolver(createCardSchema) as Resolver<CreateCardInput>,
     defaultValues: {
       socialLinks: [{ platform: '', url: '' }],
       theme: 'default',
@@ -40,7 +41,7 @@ export default function CreateCardPage() {
       if (data.logo?.[0]) {
         try {
           logoUrl = await uploadFile(data.logo[0])
-        } catch (err) {
+        } catch {
           throw new Error('Erreur lors de l\'upload du logo')
         }
       }
@@ -57,14 +58,14 @@ export default function CreateCardPage() {
       })
 
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Erreur lors de la création de la carte')
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Erreur lors de la création de la carte')
       }
 
       const card = await response.json()
       router.push(`/cards/${card.id}`)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Une erreur est survenue')
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Une erreur est survenue')
     } finally {
       setIsSubmitting(false)
     }

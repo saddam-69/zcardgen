@@ -4,46 +4,28 @@ import { prisma } from '@/lib/prisma'
 import { authOptions } from '@/lib/auth'
 
 export async function GET(
-  request: Request,
+  req: Request,
   { params }: { params: { id: string } }
-) {
-  try {
-    const card = await prisma.card.findUnique({
-      where: { id: params.id },
-      include: {
-        socialLinks: true,
-      },
-    })
+): Promise<Response> {
+  const card = await prisma.card.findUnique({
+    where: { id: params.id },
+    include: {
+      socialLinks: true,
+      views: true,
+    },
+  })
 
-    if (!card) {
-      return NextResponse.json(
-        { error: 'Carte non trouvée' },
-        { status: 404 }
-      )
-    }
-
-    // Enregistrer la vue
-    await prisma.view.create({
-      data: {
-        cardId: card.id,
-        ipAddress: request.headers.get('x-forwarded-for') || undefined,
-        userAgent: request.headers.get('user-agent') || undefined,
-      },
-    })
-
-    return NextResponse.json(card)
-  } catch (error) {
-    return NextResponse.json(
-      { error: 'Erreur serveur' },
-      { status: 500 }
-    )
+  if (!card) {
+    return NextResponse.json({ error: 'Carte introuvable' }, { status: 404 })
   }
+
+  return NextResponse.json(card)
 }
 
 export async function DELETE(
-  request: Request,
+  req: Request,
   { params }: { params: { id: string } }
-) {
+): Promise<Response> {
   try {
     const session = await getServerSession(authOptions)
     
@@ -89,7 +71,8 @@ export async function DELETE(
     })
 
     return NextResponse.json({ success: true })
-  } catch (error) {
+  } catch (err) {
+    console.error('Erreur lors de la suppression de la carte:', err)
     return NextResponse.json(
       { error: 'Erreur serveur' },
       { status: 500 }

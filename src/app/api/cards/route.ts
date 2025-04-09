@@ -45,14 +45,15 @@ export async function POST(request: Request) {
     })
 
     return NextResponse.json(card)
-  } catch (error) {
-    if (error instanceof z.ZodError) {
+  } catch (err) {
+    if (err instanceof z.ZodError) {
       return NextResponse.json(
-        { error: error.errors[0].message },
+        { error: err.errors[0].message },
         { status: 400 }
       )
     }
 
+    console.error('Erreur lors de la création de la carte:', err)
     return NextResponse.json(
       { error: 'Erreur serveur' },
       { status: 500 }
@@ -87,7 +88,8 @@ export async function GET() {
     })
 
     return NextResponse.json(cards)
-  } catch (error) {
+  } catch (err) {
+    console.error('Erreur lors de la récupération des cartes:', err)
     return NextResponse.json(
       { error: 'Erreur serveur' },
       { status: 500 }
@@ -162,14 +164,15 @@ export async function PUT(request: Request) {
     })
 
     return NextResponse.json(updatedCard)
-  } catch (error) {
-    if (error instanceof z.ZodError) {
+  } catch (err) {
+    if (err instanceof z.ZodError) {
       return NextResponse.json(
-        { error: error.errors[0].message },
+        { error: err.errors[0].message },
         { status: 400 }
       )
     }
 
+    console.error('Erreur lors de la mise à jour de la carte:', err)
     return NextResponse.json(
       { error: 'Erreur serveur' },
       { status: 500 }
@@ -231,7 +234,8 @@ export async function DELETE(request: Request) {
     })
 
     return NextResponse.json({ success: true })
-  } catch (error) {
+  } catch (err) {
+    console.error('Erreur lors de la suppression de la carte:', err)
     return NextResponse.json(
       { error: 'Erreur serveur' },
       { status: 500 }

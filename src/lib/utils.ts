@@ -1,11 +1,8 @@
-import fs from 'fs'
-import path from 'path'
-import { v4 as uuidv4 } from 'uuid'
+import { type ClassValue, clsx } from "clsx"
+import { twMerge } from "tailwind-merge"
 
-// Créer le dossier uploads s'il n'existe pas
-const uploadsDir = path.join(process.cwd(), 'public', 'uploads')
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true })
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
 }
 
 /**
@@ -14,41 +11,37 @@ if (!fs.existsSync(uploadsDir)) {
  * @returns L'URL publique du fichier
  */
 export async function uploadFile(file: File): Promise<string> {
-  try {
-    // Générer un nom de fichier unique
-    const fileExtension = file.name.split('.').pop()
-    const fileName = `${uuidv4()}.${fileExtension}`
-    const filePath = path.join(uploadsDir, fileName)
+  const formData = new FormData()
+  formData.append('file', file)
 
-    // Convertir le fichier en buffer
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
+  const response = await fetch('/api/upload', {
+    method: 'POST',
+    body: formData,
+  })
 
-    // Écrire le fichier sur le disque
-    fs.writeFileSync(filePath, buffer)
-
-    // Retourner l'URL publique
-    return `/uploads/${fileName}`
-  } catch (error) {
-    console.error('Erreur lors de l\'upload du fichier:', error)
-    throw new Error('Erreur lors de l\'upload du fichier')
+  if (!response.ok) {
+    throw new Error('Erreur lors du téléchargement du fichier')
   }
+
+  const data = await response.json()
+  return data.url
 }
 
 /**
  * Supprime un fichier uploadé
- * @param url L'URL publique du fichier
+ * Cette fonction ne fait rien côté client
+ * La suppression devrait être gérée côté serveur
  */
-export function deleteFile(url: string): void {
-  try {
-    const fileName = url.split('/').pop()
-    if (!fileName) return
+export async function deleteFile(url: string): Promise<void> {
+  const response = await fetch('/api/upload', {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ url }),
+  })
 
-    const filePath = path.join(uploadsDir, fileName)
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath)
-    }
-  } catch (error) {
-    console.error('Erreur lors de la suppression du fichier:', error)
+  if (!response.ok) {
+    throw new Error('Erreur lors de la suppression du fichier')
   }
 } 
