@@ -29,10 +29,15 @@ export async function POST(request: Request) {
       )
     }
 
+    const { socialLinks, ...cardData } = validatedData
+
     const card = await prisma.card.create({
       data: {
-        ...validatedData,
+        ...cardData,
         userId: user.id,
+        socialLinks: {
+          create: socialLinks
+        }
       },
       include: {
         socialLinks: true
@@ -133,9 +138,24 @@ export async function PUT(request: Request) {
       )
     }
 
+    const { socialLinks, ...cardData } = validatedData
+
+    if (socialLinks) {
+      await prisma.socialLink.deleteMany({
+        where: { cardId: id }
+      })
+    }
+
     const updatedCard = await prisma.card.update({
       where: { id },
-      data: validatedData,
+      data: {
+        ...cardData,
+        ...(socialLinks ? {
+          socialLinks: {
+            create: socialLinks
+          }
+        } : {})
+      },
       include: {
         socialLinks: true
       }

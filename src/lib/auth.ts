@@ -5,6 +5,18 @@ import { prisma } from "./prisma"
 import bcrypt from "bcryptjs"
 import { z } from "zod"
 
+// Étendre le type Session pour inclure l'ID utilisateur
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string
+      name?: string | null
+      email?: string | null
+      image?: string | null
+    }
+  }
+}
+
 const loginSchema = z.object({
   email: z.string().email("Email invalide"),
   password: z.string().min(6, "Le mot de passe doit contenir au moins 6 caractères"),
